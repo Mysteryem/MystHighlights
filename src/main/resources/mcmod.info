@@ -1,0 +1,16 @@
+[
+{
+  "modid": "mysthighlights",
+  "name": "Myst Highlights",
+  "description": "Mod for displaying and modifying vanilla block and entity highlights",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Mysteryem"],
+  "credits": "Mysteryem",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
