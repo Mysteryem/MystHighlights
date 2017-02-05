@@ -3,15 +3,16 @@ package uk.co.mysterymayhem.mysthighlights;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 /**
  * Created by Mysteryem on 2016-12-08.
  */
 public class ConfigHandler {
-    static boolean CONFIG_SETUP_ALLOWED = false;
 
     // The values during class initialisation are the defaults
     static boolean DISABLE_VANILLA_BLOCK_HIGHLIGHT = true;
@@ -20,11 +21,11 @@ public class ConfigHandler {
     static boolean RENDER_BLOCK_OVERLAY_USES_COLLISION = true;
     static boolean BLOCK_COLLISION_BOXES_CLAMPED = true;
     static boolean RENDER_BLOCK_LINES_USES_COLLISION = false;
-    static boolean DRAW_BLOCK_LINES_AFTER_OVERLAY = true;
-    static boolean DRAW_ENTITY_LINES_AFTER_OVERLAY = true;
     static boolean RENDER_ENTITY_HITBOX_LINES = false;
     static boolean RENDER_ENTITY_HITBOX_OVERLAY = false;
     static boolean RENDER_ENTITY_MODEL_OVERLAY = true;
+    static boolean RENDER_LIVING_MODEL_OUTLINE = true;
+    static boolean RENDER_LIVING_GLOW = false;
     static float BLOCK_LINES_WIDTH = 2f;
     static float ENTITY_LINES_WIDTH = 2f;
     final static float[] BLOCK_LINES_COLOUR = new float[]{0f, 0f, 0f, 0.4f};
@@ -32,9 +33,19 @@ public class ConfigHandler {
     final static float[] ENTITY_HITBOX_LINES_COLOUR = new float[]{0f, 0f, 0f, 0.4f};
     final static float[] ENTITY_HITBOX_OVERLAY_COLOUR = new float[]{0f, 0f, 0f, 0.4f};
     final static float[] ENTITY_MODEL_OVERLAY_COLOUR = new float[]{0f, 0f, 0f, 1f};
+    final static float[] ENTITY_MODEL_OUTLINE_COLOUR = new float[]{1f, 1f, 1f, 1f};
     private static final Pattern COLOUR_VALIDATOR = Pattern.compile("(\\d+(\\.\\d+)?,+){2,3}(\\d+(\\.\\d+)?)");
 
-    public static void loadConfig(File file) {
+    private static final String CONFIG_DIRECTORY_NAME = "myst_highlights";
+    private static final String MAIN_CONFIG_NAME = "core.cfg";
+    private static Path CONFIG_DIRECTORY;
+    private static Configuration MAIN_CONFIG;
+    static void initialLoadConfig(FMLPreInitializationEvent event) {
+        CONFIG_DIRECTORY = event.getModConfigurationDirectory().toPath().resolve(CONFIG_DIRECTORY_NAME);
+        MAIN_CONFIG = new Configuration(CONFIG_DIRECTORY.resolve(MAIN_CONFIG_NAME).toFile());
+    }
+
+    static void loadConfig(File file) {
         Configuration configuration = new Configuration(file);
         configuration.load();
 
@@ -56,16 +67,16 @@ public class ConfigHandler {
                 "blockLinesUsesCollision", Configuration.CATEGORY_GENERAL, RENDER_BLOCK_LINES_USES_COLLISION,
                 "When drawing the outline of a block, should the outline be drawn over the collision boxes of the block." +
                         "\nI don't think outlines look very good with this option on, but it's here if you want both outlines and overlays enabled and using collision boxes");
-//        DRAW_BLOCK_LINES_AFTER_OVERLAY = configuration.getBoolean(
-//                "drawBlockLinesAfterOverlay", Configuration.CATEGORY_GENERAL, true, "If both block lines and overlay are enabled, determines the order in which they are drawn");
-//        DRAW_ENTITY_LINES_AFTER_OVERLAY = configuration.getBoolean(
-//                "drawEntityLinesAfterOverlay", Configuration.CATEGORY_GENERAL, true, "If both entity lines and overlay are enabled, determines the order in which they are drawn");
         RENDER_ENTITY_HITBOX_LINES = configuration.getBoolean(
                 "entityHitboxLinesEnabled", Configuration.CATEGORY_GENERAL, RENDER_ENTITY_HITBOX_LINES, "Draw an outline of the hitbox of the entity you're looking at");
         RENDER_ENTITY_HITBOX_OVERLAY = configuration.getBoolean(
                 "entityHitboxOverlayEnabled", Configuration.CATEGORY_GENERAL, RENDER_ENTITY_HITBOX_OVERLAY, "Draw an overlay of the hitbox of the entity you're looking at");
         RENDER_ENTITY_MODEL_OVERLAY = configuration.getBoolean(
                 "entityModelOverlayEnabled", Configuration.CATEGORY_GENERAL, RENDER_ENTITY_MODEL_OVERLAY, "Draw an overlay on top of the model of the entity you're looking at");
+        RENDER_LIVING_MODEL_OUTLINE = configuration.getBoolean(
+                "entityModelOutlineEnabled", Configuration.CATEGORY_GENERAL, RENDER_LIVING_MODEL_OUTLINE, "Draw an outline around the model of the entity you're looking at");
+        RENDER_LIVING_GLOW = configuration.getBoolean(
+                "entityGlowEnabled", Configuration.CATEGORY_GENERAL, RENDER_LIVING_GLOW, "Apply the 'glowing' effect to the entity you're looking at");
         BLOCK_LINES_WIDTH = configuration.getFloat(
                 "blockLinesWidth", Configuration.CATEGORY_GENERAL, BLOCK_LINES_WIDTH, 0f, Float.MAX_VALUE, "Width of the outline of the block you're looking at");
         ENTITY_LINES_WIDTH = configuration.getFloat(
@@ -95,11 +106,15 @@ public class ConfigHandler {
                 "1, 1, 1", "The colour entity model overlays should be in RGB format: \"red, green, blue\", each value is from 0-1", COLOUR_VALIDATOR);
         parseColourString(colourString, ENTITY_MODEL_OVERLAY_COLOUR, currentConfigString);
 
-        CONFIG_SETUP_ALLOWED = true;
-
+        currentConfigString = "entityModelOutlineColour";
+        colourString = configuration.getString(currentConfigString, Configuration.CATEGORY_GENERAL,
+                "1, 1, 1", "The colour entity model outlines should be in RGB format: \"red, green, blue\", each value is from 0-1", COLOUR_VALIDATOR);
+        parseColourString(colourString, ENTITY_MODEL_OUTLINE_COLOUR, currentConfigString);
         if (configuration.hasChanged()) {
             configuration.save();
         }
+
+        Config.loadConfigFromHandler();
     }
 
     private static void parseColourString(String colourString, float[] arrayToStoreTo, String exceptionInfo) {
