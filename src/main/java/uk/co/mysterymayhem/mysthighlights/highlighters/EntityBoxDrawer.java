@@ -51,12 +51,16 @@ public class EntityBoxDrawer {
             // Draw boxes/lines/both
             if (Config.entityOverlayHitbox_enabled) {
                 RenderGlobal.renderFilledBox(
-                        entityHit.getRenderBoundingBox().offset(-playerXInterp - entityXDiff, -playerYInterp - entityYDiff, -playerZInterp - entityZDiff),
+                        entityHit.getRenderBoundingBox()
+                                .expandXyz(0.005)
+                                .offset(-playerXInterp - entityXDiff, -playerYInterp - entityYDiff, -playerZInterp - entityZDiff),
                         Config.entityOverlayHitbox_red, Config.entityOverlayHitbox_green, Config.entityOverlayHitbox_blue, Config.entityOverlayHitbox_alpha);
             }
             if (Config.entityOutlineHitbox_enabled) {
                 RenderGlobal.drawSelectionBoundingBox(
-                        entityHit.getRenderBoundingBox().offset(-playerXInterp - entityXDiff, -playerYInterp - entityYDiff, -playerZInterp - entityZDiff),
+                        entityHit.getRenderBoundingBox()
+                                .expandXyz(0.005)
+                                .offset(-playerXInterp - entityXDiff, -playerYInterp - entityYDiff, -playerZInterp - entityZDiff),
                         Config.entityOutlineHitbox_red, Config.entityOutlineHitbox_green, Config.entityOutlineHitbox_blue, Config.entityOutlineHitbox_alpha);
             }
 
