@@ -12,7 +12,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import uk.co.mysterymayhem.mysthighlights.Config;
+import uk.co.mysterymayhem.mysthighlights.config.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +33,15 @@ public class BlockBoxDrawer {
         if (target.typeOfHit == RayTraceResult.Type.BLOCK) {
             // By default we prevent vanilla from drawing it's own block highlights
             // I suppose some people might want to simply disable all highlights, which this will also enable them to do
-            if (Config.DISABLE_VANILLA_BLOCK_HIGHLIGHT) {
+            if (Config.blockOutline_disableVanilla) {
                 event.setCanceled(true);
             }
 
-            if (Config.RENDER_BLOCK_LINES || Config.RENDER_BLOCK_OVERLAY) {
+            if (Config.blockOutline_enabled || Config.blockOverlay_enabled) {
 
                 BlockPos blockpos = event.getTarget().getBlockPos();
                 EntityPlayer player = event.getPlayer();
-                World world = player.worldObj;
+                World world = player.world;
                 float partialTicks = event.getPartialTicks();
 
                 IBlockState iblockstate = world.getBlockState(blockpos);
@@ -50,7 +50,7 @@ public class BlockBoxDrawer {
                     // Vanilla GL setup
                     GlStateManager.enableBlend();
                     GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-                    GlStateManager.glLineWidth(Config.BLOCK_LINES_WIDTH);
+                    GlStateManager.glLineWidth(Config.blockOutline_lineWidth);
                     GlStateManager.disableTexture2D();
                     GlStateManager.depthMask(false);
 
@@ -63,7 +63,7 @@ public class BlockBoxDrawer {
                     List<AxisAlignedBB> collisionBoundingBoxes = new ArrayList<>();
                     AxisAlignedBB selectedBoundingBox = iblockstate.getSelectedBoundingBox(world, blockpos).expandXyz(0.0020000000949949026D).offset(-d0, -d1, -d2);
 
-                    if (Config.RENDER_BLOCK_OVERLAY_USES_COLLISION || Config.RENDER_BLOCK_LINES_USES_COLLISION) {
+                    if (Config.blockOverlay_usesCollision || Config.blockOutline_usesCollision) {
                         List<AxisAlignedBB> tempList = new ArrayList<>();
                         // Adds all collision AABBs that collide with the general bounding box of the block
                         iblockstate.addCollisionBoxToList(world, blockpos, iblockstate.getSelectedBoundingBox(world, blockpos), tempList, null);
@@ -72,7 +72,7 @@ public class BlockBoxDrawer {
                         if (tempList.isEmpty()) {
                             collisionBoundingBoxes.add(selectedBoundingBox);
                         }
-                        else if (Config.BLOCK_COLLISION_BOXES_CLAMPED) {
+                        else if (Config.blockCommon_clampCollision) {
                             AxisAlignedBB offsetFullBlock = Block.FULL_BLOCK_AABB.offset(blockpos);
                             for (AxisAlignedBB tempBB : tempList) {
 //                                    AxisAlignedBB resultantBB = tempBB.func_191500_a(offsetFullBlock).expandXyz(0.0020000000949949026D).offset(-d0, -d1, -d2);
@@ -87,28 +87,28 @@ public class BlockBoxDrawer {
                         }
                     }
 
-                    if (Config.RENDER_BLOCK_OVERLAY) {
-                        if (Config.RENDER_BLOCK_OVERLAY_USES_COLLISION) {
+                    if (Config.blockOverlay_enabled) {
+                        if (Config.blockOverlay_usesCollision) {
                             for (AxisAlignedBB bb : collisionBoundingBoxes) {
                                 RenderGlobal.renderFilledBox(
-                                        bb, Config.BLOCK_OVERLAY_RED, Config.BLOCK_OVERLAY_GREEN, Config.BLOCK_OVERLAY_BLUE, Config.BLOCK_OVERLAY_ALPHA);
+                                        bb, Config.blockOverlay_red, Config.blockOverlay_green, Config.blockOverlay_blue, Config.blockOverlay_alpha);
                             }
                         }
                         else {
                             RenderGlobal.renderFilledBox(
-                                    selectedBoundingBox, Config.BLOCK_OVERLAY_RED, Config.BLOCK_OVERLAY_GREEN, Config.BLOCK_OVERLAY_BLUE, Config.BLOCK_OVERLAY_ALPHA);
+                                    selectedBoundingBox, Config.blockOverlay_red, Config.blockOverlay_green, Config.blockOverlay_blue, Config.blockOverlay_alpha);
                         }
                     }
-                    if (Config.RENDER_BLOCK_LINES) {
-                        if (Config.RENDER_BLOCK_LINES_USES_COLLISION) {
+                    if (Config.blockOutline_enabled) {
+                        if (Config.blockOutline_usesCollision) {
                             for (AxisAlignedBB bb : collisionBoundingBoxes) {
                                 RenderGlobal.drawSelectionBoundingBox(
-                                        bb, Config.BLOCK_OVERLAY_RED, Config.BLOCK_OVERLAY_GREEN, Config.BLOCK_OVERLAY_BLUE, Config.BLOCK_OVERLAY_ALPHA);
+                                        bb, Config.blockOutline_red, Config.blockOutline_green, Config.blockOutline_blue, Config.blockOutline_alpha);
                             }
                         }
                         else {
                             RenderGlobal.drawSelectionBoundingBox(
-                                    selectedBoundingBox, Config.BLOCK_LINES_RED, Config.BLOCK_LINES_GREEN, Config.BLOCK_LINES_BLUE, Config.BLOCK_LINES_ALPHA);
+                                    selectedBoundingBox, Config.blockOutline_red, Config.blockOutline_green, Config.blockOutline_blue, Config.blockOutline_alpha);
                         }
                     }
 

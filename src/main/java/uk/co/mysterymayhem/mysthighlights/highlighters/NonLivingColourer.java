@@ -9,7 +9,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import uk.co.mysterymayhem.mysthighlights.Config;
+import uk.co.mysterymayhem.mysthighlights.config.Config;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -39,9 +39,9 @@ public class NonLivingColourer {
             //NEEDED
             RenderHelper.enableStandardItemLighting();
 
-            float red = Config.ENTITY_MODEL_RED;
-            float green = Config.ENTITY_MODEL_GREEN;
-            float blue = Config.ENTITY_MODEL_BLUE;
+            float red = Config.entityOverlayModel_red;
+            float green = Config.entityOverlayModel_green;
+            float blue = Config.entityOverlayModel_blue;
             float alpha = 1f;
             glLightModel(GL_LIGHT_MODEL_AMBIENT, RenderHelper.setColorBuffer(red, green, blue, alpha));
             for (int i = 0; i < 8; ++i) {

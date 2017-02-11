@@ -5,129 +5,158 @@ package uk.co.mysterymayhem.mysthighlights.highlighters;
  */
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItemFrame;
+import net.minecraft.item.ItemStack;
+import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import uk.co.mysterymayhem.mysthighlights.config.Config;
+import uk.co.mysterymayhem.mysthighlights.util.ConfigColourFontRenderer;
+import uk.co.mysterymayhem.mysthighlights.util.Util;
 
 /**
  * Applied the vanilla glowing effect to the entity you're looking at.
- *
+ * <p>
  * Sets the glowing flag and calls Entity::setGlowing. For some reason, Entity::setGlowing isn't enough to actually make
  * entities glow, I looked through the source and found that a flag gets set only on the server side, I apply this flag
  * as per necessary on the client side.
- *
+ * <p>
  * This glow effect specifically does not cause issues with already glowing entities, entities that gain the glowing
  * effect whilst you're looking at them or entities that lose the glowing effect whilst you're looking at them.
  */
 public class EntityGlowOutliner {
 
-    private static final Getter ENTITY_FLAG_GETTER;
-    private static final Setter ENTITY_FLAG_SETTER;
+    private static final String TEAM_NAME = "mh_outlineglow";
 
-    static {
-        try {
-            // Unreflection on fields/methods/etc that have been set to accessible can be unreflected by any Lookup object
-            MethodHandles.Lookup lookup = MethodHandles.publicLookup();
-
-            // ReflectionHelper calls setAccessible(true) on the method
-            Method method = ReflectionHelper.findMethod(Entity.class, null, new String[]{"getFlag", "func_70083_f"}, int.class);
-            MethodHandle getFlagHandle = lookup.unreflect(method);
-
-            method = ReflectionHelper.findMethod(Entity.class, null, new String[]{"setFlag", "func_70052_a"}, int.class, boolean.class);
-            MethodHandle setFlagHandle = lookup.unreflect(method);
-
-            Constructor<MethodHandles.Lookup> classArgsCtr = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
-            // Got to setAcessible ourselves
-            classArgsCtr.setAccessible(true);
-            MethodHandles.Lookup entityClassLookup = classArgsCtr.newInstance(Entity.class);
-
-            ENTITY_FLAG_GETTER = (Getter)LambdaMetafactory.metafactory(
-                    //caller/context for classloader and access privileges of created lambda class
-                    entityClassLookup,
-                    // interface method name
-                    "get",
-                    // imagine return type is type the lambda class' construct returns, arg types are arg types for that constructor
-                    MethodType.methodType(Getter.class),
-                    // interface method's return type and parameters
-                    MethodType.methodType(boolean.class, Entity.class, int.class),
-                    // _Direct_ MethodHandle to be used as the implementation (must be for a method/constructor)
-                    getFlagHandle,
-                    // return type and parameters of the MethodHandle === return type and parameters of the method, with
-                    // the declaring class prepended to the parameters if the method is an instance method
-                    MethodType.methodType(getFlagHandle.type().returnType(), getFlagHandle.type().parameterArray())
-            ).getTarget().invoke();
-
-            ENTITY_FLAG_SETTER = (Setter)LambdaMetafactory.metafactory(
-                    entityClassLookup,
-                    "set",
-                    MethodType.methodType(Setter.class),
-                    MethodType.methodType(void.class, Entity.class, int.class, boolean.class),
-                    setFlagHandle,
-                    MethodType.methodType(setFlagHandle.type().returnType(), setFlagHandle.type().parameterArray())
-            ).getTarget().invoke();
-
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    @FunctionalInterface
-    public interface Getter {
-        boolean get(Entity entity, int flagIndex);
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    @FunctionalInterface
-    public interface Setter {
-        void set(Entity entity, int flagIndex, boolean value);
-    }
-
-    // WeakReference in case it's possible to keep reference to the entity even after leaving a server/singleplayer world
-    private static WeakReference<Entity> lastNonLivingEntity = null;
-    private static boolean lastNonLivingWasPreviouslyGlowing = false;
-
-    @SubscribeEvent
-    public static void onRenderWorld(RenderWorldLastEvent event) {
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onRenderWorldLastHigh(RenderWorldLastEvent event) {
         Entity entity;
-        if (lastNonLivingEntity != null && (entity = lastNonLivingEntity.get()) != null) {
-            if (!lastNonLivingWasPreviouslyGlowing) {
-                boolean getFlag = ENTITY_FLAG_GETTER.get(entity, 6);
-
-                if (getFlag) {
-                    ENTITY_FLAG_SETTER.set(entity, 6, false);
-                }
-                entity.setGlowing(false);
-            }
-            lastNonLivingEntity = null;
-        }
-
         Minecraft minecraft = Minecraft.getMinecraft();
         RayTraceResult objectMouseOver = minecraft.objectMouseOver;
-        if (objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
+        if (objectMouseOver != null && objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
             entity = objectMouseOver.entityHit;
 
-            boolean isGlowing = entity.isGlowing();
-            lastNonLivingWasPreviouslyGlowing = isGlowing;
-            lastNonLivingEntity = new WeakReference<>(entity);
-            if (!isGlowing) {
-                boolean getFlag = ENTITY_FLAG_GETTER.get(entity, 6);
+            // Get renderer
+            Render<Entity> renderer = minecraft.getRenderManager().getEntityRenderObject(entity);
 
-                if (!getFlag) {
-                    ENTITY_FLAG_SETTER.set(entity, 6, true);
-                }
-                entity.setGlowing(true);
+            // Method is annotated @Nullable, is that really correct?
+            if (renderer == null) {
+                return;
+            }
+
+            // Get render manager
+            RenderManager renderManager = renderer.getRenderManager();
+
+            float partialTicks = minecraft.getRenderPartialTicks();
+
+            Scoreboard scoreboard = entity.world.getScoreboard();
+            String nameUsedInScoreboard = Util.getScoreboardName(entity);
+
+            // Current team
+            ScorePlayerTeam currentTeam = scoreboard.getPlayersTeam(nameUsedInScoreboard);
+
+            // We need to put the entity on a special team
+            ScorePlayerTeam highlightsteam = scoreboard.getTeam(TEAM_NAME);
+            if (highlightsteam == null) {
+                highlightsteam = scoreboard.createTeam(TEAM_NAME);
+                highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
+            }
+            // FIXME: Seems to have a tendency to get reset?
+//            highlightsteam.setNamePrefix(SPECIAL_NAME_PREFIX);
+            // Add player to the team
+            scoreboard.addPlayerToTeam(nameUsedInScoreboard, highlightsteam.getRegisteredName());
+
+            // Set the render manager's font renderer
+            // Directly accessing the field instead of using the getter method so we can ensure state goes back to how it was before
+            FontRenderer oldFontRenderer = renderManager.textRenderer;
+            renderManager.textRenderer = CONFIG_COLOUR_FONT_RENDERER;
+
+            RenderGlobal renderGlobal = minecraft.renderGlobal;
+            RenderManager mcRenderManager = minecraft.getRenderManager();
+
+            minecraft.getFramebuffer().bindFramebuffer(true);
+            renderGlobal.entityOutlinesRendered = true;
+            renderGlobal.entityOutlineFramebuffer.bindFramebuffer(false);
+
+            // Disables text rendering, except for itemframes...
+            mcRenderManager.setRenderOutlines(true);
+
+            // FIXME: Glowing effect gets applied to already rendered outlines in the entityOutlineFramebuffer
+
+            // Workaround for item frame text rendering even with setRenderOutlines(true)
+            ItemStack displayedItem;
+            if (entity instanceof EntityItemFrame
+                    && (displayedItem = ((EntityItemFrame)entity).getDisplayedItem()) != null // Null check for 1.10.2 compat
+                    && displayedItem.hasDisplayName()) {
+                String displayName = displayedItem.getDisplayName();
+                displayedItem.clearCustomName();
+
+                // Actually render the entity
+                mcRenderManager.renderEntityStatic(entity, partialTicks, false);
+
+                // Restore itemstack display name
+                displayedItem.setStackDisplayName(displayName);
+            }
+            else {
+                // Actually renders the entity
+                mcRenderManager.renderEntityStatic(entity, partialTicks, false);
+            }
+
+            // Re-enables text rendering
+            mcRenderManager.setRenderOutlines(false);
+
+            // Not needed?
+            renderGlobal.entityOutlineFramebuffer.bindFramebuffer(true);
+
+            // Needed (actually 'runs' the shader as far as I can tell)
+            renderGlobal.entityOutlineShader.loadShaderGroup(partialTicks);
+
+            // Needed
+            GlStateManager.enableDepth();
+
+            // Needed (Some pixels on spawn eggs weren't rendering otherwise. Not noticed any other issues)
+            GlStateManager.enableAlpha();
+
+            // Needed
+            minecraft.getFramebuffer().bindFramebuffer(false);
+
+//            GlStateManager.disableLighting();
+//            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+//            GlStateManager.enableLighting();
+
+            // Needed to clean up lighting
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
+
+            // Needed to clean up lighting
+            minecraft.entityRenderer.disableLightmap();
+
+            // Restore the font renderer
+            renderManager.textRenderer = oldFontRenderer;
+
+            // Restore the team
+            if (currentTeam != null) {
+                scoreboard.addPlayerToTeam(nameUsedInScoreboard, currentTeam.getRegisteredName());
+            }
+            else {
+                scoreboard.removePlayerFromTeam(nameUsedInScoreboard, highlightsteam);
             }
         }
     }
+
+    private static ConfigColourFontRenderer CONFIG_COLOUR_FONT_RENDERER = new ConfigColourFontRenderer() {
+        @Override
+        public int getColourFromConfig() {
+            return Config.entityOutlineModelGlow_colour;
+        }
+    };
 }

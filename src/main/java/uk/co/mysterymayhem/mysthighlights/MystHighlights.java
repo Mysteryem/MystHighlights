@@ -3,9 +3,7 @@ package uk.co.mysterymayhem.mysthighlights;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import uk.co.mysterymayhem.mysthighlights.highlighters.*;
-
-import java.io.File;
+import uk.co.mysterymayhem.mysthighlights.config.Config;
 
 /**
  * Created by Mysteryem on 2016-12-08.
@@ -17,50 +15,18 @@ import java.io.File;
         acceptableSaveVersions = "*",
         clientSideOnly = true,
         name = MystHighlights.NAME,
-        acceptedMinecraftVersions = "[1.10.2, 1.12)")
+        acceptedMinecraftVersions = "[1.10.2, 1.12)",
+        guiFactory = MystHighlights.CONFIG_GUI_FACTORY
+)
 public class MystHighlights {
     public static final String MODID = "mysthighlights";
     public static final String VERSION = "1.0";
     public static final String NAME = "Myst Highlights";
+    public static final String CONFIG_GUI_FACTORY = "uk.co.mysterymayhem.mysthighlights.config.HighlightsGuiFactory";
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        File suggestedConfigurationFile = event.getSuggestedConfigurationFile();
-        ConfigHandler.loadConfig(suggestedConfigurationFile);
-        MinecraftForge.EVENT_BUS.register(EntityCustomOutliner.class);
-        if (Config.RENDER_ENTITY_MODEL_OVERLAY) {
-            MinecraftForge.EVENT_BUS.register(LivingColourer.class);
-            MinecraftForge.EVENT_BUS.register(NonLivingColourer.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(LivingColourer.class);
-            MinecraftForge.EVENT_BUS.unregister(NonLivingColourer.class);
-        }
-        if (Config.RENDER_LIVING_MODEL_OUTLINE) {
-            MinecraftForge.EVENT_BUS.register(EntityCustomOutliner.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(EntityCustomOutliner.class);
-        }
-        if (Config.RENDER_LIVING_GLOW) {
-            MinecraftForge.EVENT_BUS.register(EntityGlowOutliner.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(EntityGlowOutliner.class);
-        }
-        if (Config.RENDER_ENTITY_HITBOX_LINES || Config.RENDER_ENTITY_HITBOX_OVERLAY) {
-            MinecraftForge.EVENT_BUS.register(EntityBoxDrawer.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(EntityBoxDrawer.class);
-        }
-        if (Config.DISABLE_VANILLA_BLOCK_HIGHLIGHT
-                || Config.RENDER_ENTITY_HITBOX_LINES
-                || Config.RENDER_ENTITY_HITBOX_OVERLAY) {
-            MinecraftForge.EVENT_BUS.register(BlockBoxDrawer.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(BlockBoxDrawer.class);
-        }
+        MinecraftForge.EVENT_BUS.register(Config.class);
+        Config.initialConfigLoad(event);
     }
 }

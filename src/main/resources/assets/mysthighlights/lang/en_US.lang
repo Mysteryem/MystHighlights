@@ -1,0 +1,67 @@
+mysthighlights.config.title=MystHighlights Configuration
+mysthighlights.config.block=Block Settings
+mysthighlights.config.block.tooltip=Settings related to block highlights
+mysthighlights.config.entity=Entity Settings
+mysthighlights.config.entity.tooltip=Settings related to entity highlights
+
+mysthighlights.config.block.outline=Outlines
+mysthighlights.config.block.outline.tooltip=Settings related to block outlines
+mysthighlights.config.block.outline.enabled=Enabled
+mysthighlights.config.block.outline.disableVanilla=Disable Vanilla Outlines
+mysthighlights.config.block.outline.red=Red
+mysthighlights.config.block.outline.green=Green
+mysthighlights.config.block.outline.blue=Blue
+mysthighlights.config.block.outline.alpha=Alpha
+mysthighlights.config.block.outline.lineWidth=Line Width
+mysthighlights.config.block.outline.usesCollision=Use Collision Boxes
+
+mysthighlights.config.block.overlay=Overlays
+mysthighlights.config.block.overlay.tooltip=Settings related to block overlays
+mysthighlights.config.block.overlay.enabled=Enabled
+mysthighlights.config.block.overlay.red=Red
+mysthighlights.config.block.overlay.green=Green
+mysthighlights.config.block.overlay.blue=Blue
+mysthighlights.config.block.overlay.alpha=Alpha
+mysthighlights.config.block.overlay.usesCollision=Use Collision Boxes
+
+mysthighlights.config.block.common=Common Settings
+mysthighlights.config.block.common.tooltip=Shared settings for both block outlines and block overlays
+mysthighlights.config.block.common.clampCollision=Clamp Collision Boxes
+
+mysthighlights.config.entity.outline.model.glow=Glowing Outlines
+mysthighlights.config.entity.outline.model.glow.tooltip=Settings related to entity outlines using the vanilla 'glowing' effect
+mysthighlights.config.entity.outline.model.glow.enabled=Enabled
+mysthighlights.config.entity.outline.model.glow.red=Red
+mysthighlights.config.entity.outline.model.glow.green=Green
+mysthighlights.config.entity.outline.model.glow.blue=Blue
+
+mysthighlights.config.entity.outline.model.custom=Custom Outlines
+mysthighlights.config.entity.outline.model.custom.tooltip=Settings related to entity outlines using a custom outline effect
+mysthighlights.config.entity.outline.model.custom.enabled=Enabled
+mysthighlights.config.entity.outline.model.custom.red=Red
+mysthighlights.config.entity.outline.model.custom.green=Green
+mysthighlights.config.entity.outline.model.custom.blue=Blue
+
+mysthighlights.config.entity.outline.hitbox=Hitbox Outlines
+mysthighlights.config.entity.outline.hitbox.tooltip=Settings related to outlines of entity hitboxes
+mysthighlights.config.entity.outline.hitbox.enabled=Enabled
+mysthighlights.config.entity.outline.hitbox.red=Red
+mysthighlights.config.entity.outline.hitbox.green=Green
+mysthighlights.config.entity.outline.hitbox.blue=Blue
+mysthighlights.config.entity.outline.hitbox.alpha=Alpha
+mysthighlights.config.entity.outline.hitbox.lineWidth=Line width
+
+mysthighlights.config.entity.overlay.model=Model Overlay
+mysthighlights.config.entity.overlay.model.tooltip=Settings related to overlays over the model of entities
+mysthighlights.config.entity.overlay.model.enabled=Enabled
+mysthighlights.config.entity.overlay.model.red=Red
+mysthighlights.config.entity.overlay.model.green=Green
+mysthighlights.config.entity.overlay.model.blue=Blue
+
+mysthighlights.config.entity.overlay.hitbox=Hitbox Overlay
+mysthighlights.config.entity.overlay.hitbox.tooltip=Settings related to overlays of entity hotboxes
+mysthighlights.config.entity.overlay.hitbox.enabled=Enabled
+mysthighlights.config.entity.overlay.hitbox.red=Red
+mysthighlights.config.entity.overlay.hitbox.green=Green
+mysthighlights.config.entity.overlay.hitbox.blue=Blue
+mysthighlights.config.entity.overlay.hitbox.alpha=Alpha

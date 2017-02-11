@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import uk.co.mysterymayhem.mysthighlights.Config;
+import uk.co.mysterymayhem.mysthighlights.config.Config;
 
 /**
  * Created by Mysteryem on 2017-01-16.
@@ -43,21 +43,27 @@ public class EntityBoxDrawer {
             // Vanilla GL setup
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-            GlStateManager.glLineWidth(Config.ENTITY_LINES_WIDTH);
+            GlStateManager.glLineWidth(Config.entityOutlineHitbox_lineWidth);
             GlStateManager.disableTexture2D();
             GlStateManager.depthMask(false);
 
+            // Not needed for some reason...
+//            GlStateManager.alphaFunc(GL11.GL_ALWAYS, 0);
+
             // Draw boxes/lines/both
-            if (Config.RENDER_ENTITY_HITBOX_OVERLAY) {
+            if (Config.entityOverlayHitbox_enabled) {
                 RenderGlobal.renderFilledBox(
                         entityHit.getRenderBoundingBox().offset(-playerXInterp - entityXDiff, -playerYInterp - entityYDiff, -playerZInterp - entityZDiff),
-                        Config.ENTITY_OVERLAY_RED, Config.ENTITY_OVERLAY_GREEN, Config.ENTITY_OVERLAY_BLUE, Config.ENTITY_OVERLAY_ALPHA);
+                        Config.entityOverlayHitbox_red, Config.entityOverlayHitbox_green, Config.entityOverlayHitbox_blue, Config.entityOverlayHitbox_alpha);
             }
-            if (Config.RENDER_ENTITY_HITBOX_LINES) {
+            if (Config.entityOutlineHitbox_enabled) {
                 RenderGlobal.drawSelectionBoundingBox(
                         entityHit.getRenderBoundingBox().offset(-playerXInterp - entityXDiff, -playerYInterp - entityYDiff, -playerZInterp - entityZDiff),
-                        Config.ENTITY_LINES_RED, Config.ENTITY_LINES_GREEN, Config.ENTITY_LINES_BLUE, Config.ENTITY_LINES_ALPHA);
+                        Config.entityOutlineHitbox_red, Config.entityOutlineHitbox_green, Config.entityOutlineHitbox_blue, Config.entityOutlineHitbox_alpha);
             }
+
+            // See above use of alphaFunc
+//            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1f);
 
             // Vanilla GL cleanup
             GlStateManager.depthMask(true);
