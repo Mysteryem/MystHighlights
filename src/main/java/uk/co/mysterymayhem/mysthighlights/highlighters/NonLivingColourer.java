@@ -8,6 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import uk.co.mysterymayhem.mysthighlights.config.Config;
 
@@ -19,7 +20,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class NonLivingColourer {
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRenderWorld(RenderWorldLastEvent event) {
         Minecraft minecraft = Minecraft.getMinecraft();
         RenderManager renderManager = minecraft.getRenderManager();
