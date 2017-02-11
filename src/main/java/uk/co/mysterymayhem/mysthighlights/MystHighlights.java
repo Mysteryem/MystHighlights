@@ -20,7 +20,7 @@ import uk.co.mysterymayhem.mysthighlights.config.Config;
 )
 public class MystHighlights {
     public static final String MODID = "mysthighlights";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.1";
     public static final String NAME = "Myst Highlights";
     public static final String CONFIG_GUI_FACTORY = "uk.co.mysterymayhem.mysthighlights.config.HighlightsGuiFactory";
 
