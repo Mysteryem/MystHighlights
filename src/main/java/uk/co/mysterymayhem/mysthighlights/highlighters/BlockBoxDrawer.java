@@ -55,9 +55,9 @@ public class BlockBoxDrawer {
                     GlStateManager.depthMask(false);
 
                     // Interpolate player position
-                    double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
-                    double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
-                    double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
+                    double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTicks;
+                    double d1 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTicks;
+                    double d2 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTicks;
 
                     // If using collision bounding boxes, there may be multiple that we want to draw
                     List<AxisAlignedBB> collisionBoundingBoxes = new ArrayList<>();

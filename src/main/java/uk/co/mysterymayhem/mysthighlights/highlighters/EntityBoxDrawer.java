@@ -28,13 +28,13 @@ public class EntityBoxDrawer {
             EntityPlayer player = event.getPlayer();
             float partialTicks = event.getPartialTicks();
 
-            double playerXInterp = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
-            double playerYInterp = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) partialTicks;
-            double playerZInterp = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) partialTicks;
+            double playerXInterp = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTicks;
+            double playerYInterp = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTicks;
+            double playerZInterp = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTicks;
 
-            double entityXInterp = entityHit.lastTickPosX + (entityHit.posX - entityHit.lastTickPosX) * (double) partialTicks;
-            double entityYInterp = entityHit.lastTickPosY + (entityHit.posY - entityHit.lastTickPosY) * (double) partialTicks;
-            double entityZInterp = entityHit.lastTickPosZ + (entityHit.posZ - entityHit.lastTickPosZ) * (double) partialTicks;
+            double entityXInterp = entityHit.lastTickPosX + (entityHit.posX - entityHit.lastTickPosX) * (double)partialTicks;
+            double entityYInterp = entityHit.lastTickPosY + (entityHit.posY - entityHit.lastTickPosY) * (double)partialTicks;
+            double entityZInterp = entityHit.lastTickPosZ + (entityHit.posZ - entityHit.lastTickPosZ) * (double)partialTicks;
 
             double entityXDiff = entityHit.posX - entityXInterp;
             double entityYDiff = entityHit.posY - entityYInterp;

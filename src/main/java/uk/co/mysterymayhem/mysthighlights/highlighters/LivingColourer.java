@@ -15,21 +15,25 @@ import static org.lwjgl.opengl.GL11.*;
 
 /**
  * For colouring living entities we can intercept RenderLivingEvents.
+ * <p>
  * In the event, we change the lighting colour to whatever's specified in the configs.
- *
- * I wanted to render entities a second time in completely one colour, and ignoring lighting
- * (GlStateManager.enableOutlineMode(...)), but couldn't get transparency to work properly
- *
+ * <p>
+ * I wanted to render entities a second time in completely one colour, and ignoring lighting (GlStateManager.enableOutlineMode(...)), but couldn't get
+ * transparency to work properly
+ * <p>
  * Slimes would render weird due to their partial transparency.
+ * <p>
  * Endermen and spiders would render weird due to their eyes being rendered separately.
- * Mooshrooms would render weird whereby the mushrooms on their backs would not inherit some properties and end up
- *      a different colour/transparency than everything else.
+ * <p>
+ * Mooshrooms would render weird whereby the mushrooms on their backs would not inherit some properties and end up a different colour/transparency than
+ * everything else.
+ * <p>
  * Held equipment and armour on mobs would act similar to mooshrooms' mushrooms.
- *
+ * <p>
  * Whenever it would seem that I finally got one of the above working, one of the others would break.
- *
- * Changing the lighting is the only solution I could come up with that seems to work on everything. But it gives
- *      the user less control over the resultant colour.
+ * <p>
+ * Changing the lighting is the only solution I could come up with that seems to work on everything. But it gives the user less control over the resultant
+ * colour.
  */
 public class LivingColourer {
 

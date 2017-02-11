@@ -6,12 +6,18 @@ import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
 
 /**
+ * Some shared methods and fields used by more than 1 class
  * Created by Mysteryem on 10/02/2017.
  */
 public class Util {
     // This is used to trick the entity renderer into thinking the entity being rendered should have a team coloured outline when rendered with outlines
     public static final String TEAM_NAME_PREFIX = /*Section character*/ "\u00a7" + /*Possibly any second character*/ "2";
 
+    /**
+     * @param entity
+     * @return
+     * @see Entity#getTeam() Entity::getTeam and where it's overridden
+     */
     public static String getScoreboardName(Entity entity) {
         if (entity instanceof EntityPlayer) {
             return entity.getName();

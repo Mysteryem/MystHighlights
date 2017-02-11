@@ -81,19 +81,16 @@ public class Config {
     public static float entityOverlayHitbox_blue = 0;
     public static float entityOverlayHitbox_alpha = 0.4f;
 
-
-
     public static Configuration config;
+    private static List<String> propertyOrder;
+    private static String category;
+    private static Property prop;
+    private static Map<String, Set<String>> configNameToPropertyKeySet;
 
     public static void initialConfigLoad(FMLPreInitializationEvent event) {
         config = new Configuration(event.getSuggestedConfigurationFile());
         syncConfig(true);
     }
-
-    private static List<String> propertyOrder;
-    private static String category;
-    private static Property prop;
-    private static Map<String, Set<String>> configNameToPropertyKeySet;
 
     public static void syncConfig(boolean load) {
         propertyOrder = new ArrayList<>();
@@ -224,9 +221,9 @@ public class Config {
         // Alpha currently doesn't work and I don't think will ever work due to issues with armour and other layers that set their own alpha settings
         //0x[A][R][G][B]
         entityOutlineModelGlow_colour =
-                (int) (entityOutlineModelGlow_red * 0xFF) << 16 //    Red
-                | (int) (entityOutlineModelGlow_green * 0xFF) << 8 // Green
-                | (int) (entityOutlineModelGlow_blue * 0xFF); //      Blue
+                (int)(entityOutlineModelGlow_red * 0xFF) << 16 //    Red
+                        | (int)(entityOutlineModelGlow_green * 0xFF) << 8 // Green
+                        | (int)(entityOutlineModelGlow_blue * 0xFF); //      Blue
 
         config.setCategoryPropertyOrder(category, propertyOrder);
         propertyOrder = new ArrayList<>();
@@ -255,9 +252,9 @@ public class Config {
         // Alpha currently doesn't work and I don't think will ever work due to issues with armour and other layers that set their own alpha settings
         //0x[A][R][G][B]
         entityOutlineModelCustom_colour =
-                (int) (entityOutlineModelCustom_red * 0xFF) << 16 //    Red
-                | (int) (entityOutlineModelCustom_green * 0xFF) << 8 // Green
-                | (int) (entityOutlineModelCustom_blue * 0xFF); //      Blue
+                (int)(entityOutlineModelCustom_red * 0xFF) << 16 //    Red
+                        | (int)(entityOutlineModelCustom_green * 0xFF) << 8 // Green
+                        | (int)(entityOutlineModelCustom_blue * 0xFF); //      Blue
 
         config.setCategoryPropertyOrder(category, propertyOrder);
         propertyOrder = new ArrayList<>();
@@ -376,11 +373,12 @@ public class Config {
         prop = null;
     }
 
-    @SubscribeEvent
-    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if (event.getModID().equals(MystHighlights.MODID)) {
-            syncConfig(false);
-        }
+    private static void process() {
+        process(prop);
+    }
+
+    private static float getFloat(float defaultValue) {
+        return (float)prop.getDouble(defaultValue);
     }
 
     private static void reloadEventListeners() {
@@ -420,14 +418,6 @@ public class Config {
         }
     }
 
-    private static float getFloat(float defaultValue) {
-        return (float)prop.getDouble(defaultValue);
-    }
-
-    private static void process() {
-        process(prop);
-    }
-
     private static void process(Property prop) {
         setLangKey(prop);
         order(prop);
@@ -439,12 +429,12 @@ public class Config {
         propKeys.add(prop.getName());
     }
 
-    private static void order(Property prop) {
-        propertyOrder.add(prop.getName());
-    }
-
     private static void setLangKey(Property prop) {
         setLangKey(prop, category);
+    }
+
+    private static void order(Property prop) {
+        propertyOrder.add(prop.getName());
     }
 
     private static void setLangKey(Property prop, String category) {
@@ -459,5 +449,12 @@ public class Config {
         builder.append('.').append(propName);
 
         prop.setLanguageKey(builder.toString());
+    }
+
+    @SubscribeEvent
+    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (event.getModID().equals(MystHighlights.MODID)) {
+            syncConfig(false);
+        }
     }
 }

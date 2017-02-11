@@ -14,8 +14,8 @@ import uk.co.mysterymayhem.mysthighlights.config.Config;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
- * There's no rendering events for entities that don't extend EntityLivingBase, so instead, I render a copy of the
- * entity over the top of itself. The copy having modified lighting.
+ * There's no rendering events for entities that don't extend EntityLivingBase, so instead, I render a copy of the entity over the top of itself. The copy
+ * having modified lighting.
  */
 public class NonLivingColourer {
 

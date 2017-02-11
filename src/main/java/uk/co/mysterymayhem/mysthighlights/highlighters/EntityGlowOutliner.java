@@ -37,6 +37,12 @@ import uk.co.mysterymayhem.mysthighlights.util.Util;
 public class EntityGlowOutliner {
 
     private static final String TEAM_NAME = "mh_outlineglow";
+    private static final ConfigColourFontRenderer CONFIG_COLOUR_FONT_RENDERER = new ConfigColourFontRenderer() {
+        @Override
+        public int getColourFromConfig() {
+            return Config.entityOutlineModelGlow_colour;
+        }
+    };
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onRenderWorldLastHigh(RenderWorldLastEvent event) {
@@ -152,11 +158,4 @@ public class EntityGlowOutliner {
             }
         }
     }
-
-    private static ConfigColourFontRenderer CONFIG_COLOUR_FONT_RENDERER = new ConfigColourFontRenderer() {
-        @Override
-        public int getColourFromConfig() {
-            return Config.entityOutlineModelGlow_colour;
-        }
-    };
 }

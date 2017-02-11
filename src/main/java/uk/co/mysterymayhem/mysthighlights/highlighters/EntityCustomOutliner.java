@@ -23,49 +23,35 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.lwjgl.opengl.GL11;
 import uk.co.mysterymayhem.mysthighlights.config.Config;
 import uk.co.mysterymayhem.mysthighlights.util.ConfigColourFontRenderer;
 import uk.co.mysterymayhem.mysthighlights.util.Util;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
-
 /**
  * Renders an outline around the entity the palyer's currently looking at. This is achieved by:
  * <p>
- * • Rendering the entity, but scaled in X and Y relative to the camera, but with outlines mode enabled, sometimes moving
- * it backwards (-z) to deal with z-fighting issues.
+ * • Rendering the entity, but scaled in X and Y relative to the camera, but with outlines mode enabled, sometimes moving it backwards (-z) to deal with
+ * z-fighting issues.
  * <p>
  * • Then rendering the entity as normally as possible over the top.
  * <p>
- * The amount scaled in the X and Y directions changes based on how far the player is from the entity in question, this
- * is so that the thickness of the outlines (in pixels) remains roughly constant.
+ * The amount scaled in the X and Y directions changes based on how far the player is from the entity in question, this is so that the thickness of the
+ * outlines (in pixels) remains roughly constant.
  * <p>
- * There is an issue with this method of creating outlines, namely, that as the re-render of living entities is slightly
- * backwards, that will often result in the ground being rendered over the top of the feet of the entity. This had to be
- * done to tackle some z-fighting issues, since it is now confirmed that there is no stencil buffer.
+ * There is an issue with this method of creating outlines, namely, that as the re-render of living entities is slightly backwards, that will often result in
+ * the ground being rendered over the top of the feet of the entity. This had to be done to tackle some z-fighting issues, since I have confirmed that there
+ * is no stencil buffer (0 bits are assigned to the stencil buffer, the internet tells me that 8 bits minimum are needed).
  */
 public class EntityCustomOutliner {
 
-    // Can't turn this into a lambda without depending on my WIP library, something to do in the future maybe
-    private static final MethodHandle GET_SHOULD_RENDER_OUTLINES;
-    private static final MethodHandle SET_SHOULD_RENDER_OUTLINES;
-    private static final MethodHandle SET_RENDERMANAGER_TEXTRENDERER;
-
-    static {
-        try {
-            Field field = ReflectionHelper.findField(Render.class, "field_188301_f", "renderOutlines");
-            GET_SHOULD_RENDER_OUTLINES = MethodHandles.publicLookup().unreflectGetter(field);
-            SET_SHOULD_RENDER_OUTLINES = MethodHandles.publicLookup().unreflectSetter(field);
-            field = ReflectionHelper.findField(RenderManager.class, "field_78736_p", "textRenderer");
-            SET_RENDERMANAGER_TEXTRENDERER = MethodHandles.publicLookup().unreflectSetter(field);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+    private static final String TEAM_NAME = "mh_outlinecustom";
+    private static final ConfigColourFontRenderer CUSTOM_OUTLINE_FONT_RENDERER = new ConfigColourFontRenderer() {
+        @Override
+        public int getColourFromConfig() {
+            return Config.entityOutlineModelCustom_colour;
         }
-    }
+    };
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onRenderWorld(RenderWorldLastEvent event) {
@@ -108,84 +94,6 @@ public class EntityCustomOutliner {
 
         }
     }
-
-    private static void renderEntityNormally(Entity entity, double x, double y, double z, float partialTicks, Render<Entity> renderer, Minecraft minecraft) {
-        // Enable lighting, this is correct most of the time
-        RenderHelper.enableStandardItemLighting();
-        int light;
-        if (renderer instanceof RenderLiving) {
-            light = entity.getBrightnessForRender(partialTicks);
-        }
-        else {
-            //FIXME: This is wrong most (all?) of the time, I'm not sure where lighting for paintings/item frames is done
-            light = entity.world.getCombinedLight(new BlockPos(entity), 0);
-        }
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, light % 65536, light >> 16);
-
-        GlStateManager.pushAttrib();
-
-        // Not using this so that glowing entities render in a special way
-//            renderer.getRenderManager().renderEntityStatic(entity, partialTicks, false);
-
-//                renderer.setRenderOutlines(false);
-
-        // Setting the team and using a very specialised FontRenderer allows us to change the colour the glow effect uses. Because we're not loading the
-        // outline shader or anything, this will cause the entity to render as a silhouette in the colour of our choosing
-        Scoreboard scoreboard = entity.world.getScoreboard();
-        String nameUsedInScoreboard = Util.getScoreboardName(entity);
-        ScorePlayerTeam currentTeam = scoreboard.getPlayersTeam(nameUsedInScoreboard);
-
-        // We need to put the entity on a team
-        ScorePlayerTeam highlightsteam = scoreboard.getTeam(TEAM_NAME);
-        if (highlightsteam == null) {
-            highlightsteam = scoreboard.createTeam(TEAM_NAME);
-            highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
-        }
-//                    highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
-        scoreboard.addPlayerToTeam(nameUsedInScoreboard, highlightsteam.getRegisteredName());
-        RenderManager renderManager = renderer.getRenderManager();
-        // Not using the method, since it's possible, but highly unlikely, that the field may contain a different value to what the method returns
-        // And want to ensure that the state goes back to how it was beforehand
-        FontRenderer oldFontRenderer = renderManager.textRenderer;
-        //TODO: MEthodHandle for setting the render manager's font renderer to my 'magic' one. (and then back to normal)
-
-        renderManager.textRenderer = CUSTOM_OUTLINE_FONT_RENDERER;
-
-        // Actually render
-        renderEntity(renderer, x, y, z, entity, partialTicks);
-
-        // Restore state
-        renderManager.textRenderer = oldFontRenderer;
-        if (currentTeam != null) {
-            scoreboard.addPlayerToTeam(nameUsedInScoreboard, currentTeam.getRegisteredName());
-        }
-        else {
-            scoreboard.removePlayerFromTeam(nameUsedInScoreboard, scoreboard.getTeam(TEAM_NAME));
-        }
-
-
-//                renderer.setRenderOutlines(renderOutlines);
-
-        // TODO: I don't know which of these are needed
-        GlStateManager.depthMask(true);
-        GlStateManager.disableLighting();
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.enableLighting();
-        GlStateManager.enableTexture2D();
-        // Seems to fix 3rd person lighting weirdness
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
-        minecraft.entityRenderer.disableLightmap();
-        GlStateManager.popMatrix();
-        GlStateManager.disableAlpha();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-//            GlStateManager.disableBlend();
-//            GlStateManager.disableRescaleNormal();
-        GlStateManager.glLineWidth(2.0F);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.popAttrib();
-    }
-
-    private static final String TEAM_NAME = "mh_outlinecustom";
 
     private static void renderCustomOutline(Entity entity, double x, double y, double z, float partialTicks, Render<Entity> renderer) {
         GlStateManager.depthMask(false);
@@ -272,12 +180,81 @@ public class EntityCustomOutliner {
         GlStateManager.depthMask(true);
     }
 
-    private static ConfigColourFontRenderer CUSTOM_OUTLINE_FONT_RENDERER = new ConfigColourFontRenderer() {
-        @Override
-        public int getColourFromConfig() {
-            return Config.entityOutlineModelCustom_colour;
+    private static void renderEntityNormally(Entity entity, double x, double y, double z, float partialTicks, Render<Entity> renderer, Minecraft minecraft) {
+        // Enable lighting, this is correct most of the time
+        RenderHelper.enableStandardItemLighting();
+        int light;
+        if (renderer instanceof RenderLiving) {
+            light = entity.getBrightnessForRender(partialTicks);
         }
-    };
+        else {
+            //FIXME: This is wrong most (all?) of the time, I'm not sure where lighting for paintings/item frames is done
+            light = entity.world.getCombinedLight(new BlockPos(entity), 0);
+        }
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, light % 65536, light >> 16);
+
+        GlStateManager.pushAttrib();
+
+        // Not using this so that glowing entities render in a special way
+//            renderer.getRenderManager().renderEntityStatic(entity, partialTicks, false);
+
+//                renderer.setRenderOutlines(false);
+
+        // Setting the team and using a very specialised FontRenderer allows us to change the colour the glow effect uses. Because we're not loading the
+        // outline shader or anything, this will cause the entity to render as a silhouette in the colour of our choosing
+        Scoreboard scoreboard = entity.world.getScoreboard();
+        String nameUsedInScoreboard = Util.getScoreboardName(entity);
+        ScorePlayerTeam currentTeam = scoreboard.getPlayersTeam(nameUsedInScoreboard);
+
+        // We need to put the entity on a team
+        ScorePlayerTeam highlightsteam = scoreboard.getTeam(TEAM_NAME);
+        if (highlightsteam == null) {
+            highlightsteam = scoreboard.createTeam(TEAM_NAME);
+            highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
+        }
+//                    highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
+        scoreboard.addPlayerToTeam(nameUsedInScoreboard, highlightsteam.getRegisteredName());
+        RenderManager renderManager = renderer.getRenderManager();
+        // Not using the method, since it's possible, but highly unlikely, that the field may contain a different value to what the method returns
+        // And want to ensure that the state goes back to how it was beforehand
+        FontRenderer oldFontRenderer = renderManager.textRenderer;
+        //TODO: MEthodHandle for setting the render manager's font renderer to my 'magic' one. (and then back to normal)
+
+        renderManager.textRenderer = CUSTOM_OUTLINE_FONT_RENDERER;
+
+        // Actually render
+        renderEntity(renderer, x, y, z, entity, partialTicks);
+
+        // Restore state
+        renderManager.textRenderer = oldFontRenderer;
+        if (currentTeam != null) {
+            scoreboard.addPlayerToTeam(nameUsedInScoreboard, currentTeam.getRegisteredName());
+        }
+        else {
+            scoreboard.removePlayerFromTeam(nameUsedInScoreboard, scoreboard.getTeam(TEAM_NAME));
+        }
+
+
+//                renderer.setRenderOutlines(renderOutlines);
+
+        // TODO: I don't know which of these are needed
+        GlStateManager.depthMask(true);
+        GlStateManager.disableLighting();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableLighting();
+        GlStateManager.enableTexture2D();
+        // Seems to fix 3rd person lighting weirdness
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
+        minecraft.entityRenderer.disableLightmap();
+        GlStateManager.popMatrix();
+        GlStateManager.disableAlpha();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+//            GlStateManager.disableBlend();
+//            GlStateManager.disableRescaleNormal();
+        GlStateManager.glLineWidth(2.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.popAttrib();
+    }
 
     private static <T extends Entity> void renderEntity(Render<T> renderer, double x, double y, double z, T entity, float partialTicks) {
         renderer.doRender(entity, x, y, z, entity.rotationYaw, partialTicks);
