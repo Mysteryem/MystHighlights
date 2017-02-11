@@ -382,39 +382,36 @@ public class Config {
     }
 
     private static void reloadEventListeners() {
-        if (entityOverlayModel_enabled) {
-            MinecraftForge.EVENT_BUS.register(LivingColourer.class);
-            MinecraftForge.EVENT_BUS.register(NonLivingColourer.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(LivingColourer.class);
-            MinecraftForge.EVENT_BUS.unregister(NonLivingColourer.class);
+        // Unregister all, so we can ensure the listeners will get called in the correct order
+        MinecraftForge.EVENT_BUS.unregister(EntityGlowOutliner.class);
+        MinecraftForge.EVENT_BUS.unregister(EntityCustomOutliner.class);
+        MinecraftForge.EVENT_BUS.unregister(LivingColourer.class);
+        MinecraftForge.EVENT_BUS.unregister(NonLivingColourer.class);
+        MinecraftForge.EVENT_BUS.unregister(EntityBoxDrawer.class);
+        MinecraftForge.EVENT_BUS.unregister(BlockBoxDrawer.class);
+
+        // Order is important so that listeners registered first get called first
+        // This determines what gets rendered over what
+        // All of these classes listen to RenderWorldLastEvent
+        if (entityOutlineModelGlow_enabled) {
+            MinecraftForge.EVENT_BUS.register(EntityGlowOutliner.class);
         }
         if (entityOutlineModelCustom_enabled) {
             MinecraftForge.EVENT_BUS.register(EntityCustomOutliner.class);
         }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(EntityCustomOutliner.class);
-        }
-        if (entityOutlineModelGlow_enabled) {
-            MinecraftForge.EVENT_BUS.register(EntityGlowOutliner.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(EntityGlowOutliner.class);
+        if (entityOverlayModel_enabled) {
+            MinecraftForge.EVENT_BUS.register(LivingColourer.class);
+            MinecraftForge.EVENT_BUS.register(NonLivingColourer.class);
         }
         if (entityOutlineHitbox_enabled || entityOverlayHitbox_enabled) {
             MinecraftForge.EVENT_BUS.register(EntityBoxDrawer.class);
         }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(EntityBoxDrawer.class);
-        }
+
+        // Block highlight rendering is done in a different event so its ordering is not important
         if (blockOutline_disableVanilla
                 || blockOverlay_enabled
                 || blockOutline_enabled) {
             MinecraftForge.EVENT_BUS.register(BlockBoxDrawer.class);
-        }
-        else {
-            MinecraftForge.EVENT_BUS.unregister(BlockBoxDrawer.class);
         }
     }
 

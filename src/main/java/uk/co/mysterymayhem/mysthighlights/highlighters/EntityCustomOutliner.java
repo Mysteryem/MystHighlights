@@ -21,7 +21,6 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 import uk.co.mysterymayhem.mysthighlights.config.Config;
@@ -53,8 +52,8 @@ public class EntityCustomOutliner {
         }
     };
 
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onRenderWorld(RenderWorldLastEvent event) {
+    @SubscribeEvent
+    public static void onRenderWorldLast(RenderWorldLastEvent event) {
         Minecraft minecraft = Minecraft.getMinecraft();
         // objectMouseOver shouldn't be null during a RenderWorldLastEvent, since its value is set earlier in the client tick
         // It might be possible for mods to screw with this so maybe it will become an issue

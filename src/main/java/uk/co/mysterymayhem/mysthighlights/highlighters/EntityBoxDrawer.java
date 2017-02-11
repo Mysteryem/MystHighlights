@@ -1,10 +1,11 @@
 package uk.co.mysterymayhem.mysthighlights.highlighters;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import uk.co.mysterymayhem.mysthighlights.config.Config;
 
@@ -13,19 +14,16 @@ import uk.co.mysterymayhem.mysthighlights.config.Config;
  */
 public class EntityBoxDrawer {
     @SubscribeEvent
-    public static void onBlockHighlight(DrawBlockHighlightEvent event) {
-        // Vanilla seems to check for this, not sure what it's used for, doesn't seem to have a use outside of
-        // highlighting the block you're currently looking at
-        if (event.getSubID() != 0) {
-            return;
-        }
-
-        RayTraceResult target = event.getTarget();
+    public static void onRenderWorldLast(RenderWorldLastEvent event) {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        // objectMouseOver shouldn't be null during a RenderWorldLastEvent, since its value is set earlier in the client tick
+        // It might be possible for mods to screw with this so maybe it will become an issue
+        RayTraceResult target = minecraft.objectMouseOver;
         if (target.typeOfHit == RayTraceResult.Type.ENTITY) {
 
             // Interpolate player and entity positions
             net.minecraft.entity.Entity entityHit = target.entityHit;
-            EntityPlayer player = event.getPlayer();
+            EntityPlayer player = minecraft.player;
             float partialTicks = event.getPartialTicks();
 
             double playerXInterp = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTicks;

@@ -18,7 +18,6 @@ import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import uk.co.mysterymayhem.mysthighlights.config.Config;
 import uk.co.mysterymayhem.mysthighlights.util.ConfigColourFontRenderer;
@@ -44,8 +43,8 @@ public class EntityGlowOutliner {
         }
     };
 
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void onRenderWorldLastHigh(RenderWorldLastEvent event) {
+    @SubscribeEvent
+    public static void onRenderWorldLast(RenderWorldLastEvent event) {
         Entity entity;
         Minecraft minecraft = Minecraft.getMinecraft();
         RayTraceResult objectMouseOver = minecraft.objectMouseOver;

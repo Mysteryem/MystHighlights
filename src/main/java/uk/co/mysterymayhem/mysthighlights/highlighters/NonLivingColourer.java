@@ -8,11 +8,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
 import uk.co.mysterymayhem.mysthighlights.config.Config;
 
-import static org.lwjgl.opengl.GL11.*;
 
 /**
  * There's no rendering events for entities that don't extend EntityLivingBase, so instead, I render a copy of the entity over the top of itself. The copy
@@ -20,8 +19,8 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class NonLivingColourer {
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onRenderWorld(RenderWorldLastEvent event) {
+    @SubscribeEvent
+    public static void onRenderWorldLast(RenderWorldLastEvent event) {
         Minecraft minecraft = Minecraft.getMinecraft();
         RenderManager renderManager = minecraft.getRenderManager();
         RayTraceResult objectMouseOver = minecraft.objectMouseOver;
@@ -44,9 +43,9 @@ public class NonLivingColourer {
             float green = Config.entityOverlayModel_green;
             float blue = Config.entityOverlayModel_blue;
             float alpha = 1f;
-            glLightModel(GL_LIGHT_MODEL_AMBIENT, RenderHelper.setColorBuffer(red, green, blue, alpha));
+            GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, RenderHelper.setColorBuffer(red, green, blue, alpha));
             for (int i = 0; i < 8; ++i) {
-                GlStateManager.glLight(GL_LIGHT0 + i, GL_DIFFUSE, RenderHelper.setColorBuffer(red, green, blue, alpha));
+                GlStateManager.glLight(GL11.GL_LIGHT0 + i, GL11.GL_DIFFUSE, RenderHelper.setColorBuffer(red, green, blue, alpha));
             }
             GlStateManager.color(red, green, blue, alpha);
             renderManager.renderEntityStatic(entityHit, partialTicks, false);
