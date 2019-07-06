@@ -15,12 +15,12 @@ import uk.co.mysterymayhem.mysthighlights.config.Config;
         acceptableSaveVersions = "*",
         clientSideOnly = true,
         name = MystHighlights.NAME,
-        acceptedMinecraftVersions = "[1.10.2, 1.12)",
+        acceptedMinecraftVersions = "[1.12, 1.13)",
         guiFactory = MystHighlights.CONFIG_GUI_FACTORY
 )
 public class MystHighlights {
     public static final String MODID = "mysthighlights";
-    public static final String VERSION = "1.1";
+    public static final String VERSION = "1.2";
     public static final String NAME = "Myst Highlights";
     public static final String CONFIG_GUI_FACTORY = "uk.co.mysterymayhem.mysthighlights.config.HighlightsGuiFactory";
 

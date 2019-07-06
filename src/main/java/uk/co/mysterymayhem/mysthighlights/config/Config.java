@@ -228,7 +228,6 @@ public class Config {
         config.setCategoryPropertyOrder(category, propertyOrder);
         propertyOrder = new ArrayList<>();
 
-
         category = CATEGORY_ENTITY_OUTLINE_MODEL_CUSTOM;
 
         prop = config.get(category, "enabled", false);

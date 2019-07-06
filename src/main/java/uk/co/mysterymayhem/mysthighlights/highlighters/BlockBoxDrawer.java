@@ -12,6 +12,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
 import uk.co.mysterymayhem.mysthighlights.config.Config;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class BlockBoxDrawer {
                 World world = player.world;
                 float partialTicks = event.getPartialTicks();
 
-                IBlockState iblockstate = world.getBlockState(blockpos);
+                IBlockState iblockstate = world.getBlockState(blockpos).getActualState(world, blockpos);
 
                 if (iblockstate.getMaterial() != Material.AIR && world.getWorldBorder().contains(blockpos)) {
                     // Vanilla GL setup
@@ -53,6 +54,7 @@ public class BlockBoxDrawer {
                     GlStateManager.glLineWidth(Config.blockOutline_lineWidth);
                     GlStateManager.disableTexture2D();
                     GlStateManager.depthMask(false);
+                    GlStateManager.alphaFunc(GL11.GL_ALWAYS, 1);
 
                     // Interpolate player position
                     double d0 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTicks;
@@ -61,12 +63,13 @@ public class BlockBoxDrawer {
 
                     // If using collision bounding boxes, there may be multiple that we want to draw
                     List<AxisAlignedBB> collisionBoundingBoxes = new ArrayList<>();
-                    AxisAlignedBB selectedBoundingBox = iblockstate.getSelectedBoundingBox(world, blockpos).expandXyz(0.0020000000949949026D).offset(-d0, -d1, -d2);
+                    AxisAlignedBB selectedBoundingBox = iblockstate.getSelectedBoundingBox(world, blockpos).grow(0.0020000000949949026D).offset(-d0,
+                            -d1, -d2);
 
                     if (Config.blockOverlay_usesCollision || Config.blockOutline_usesCollision) {
                         List<AxisAlignedBB> tempList = new ArrayList<>();
                         // Adds all collision AABBs that collide with the general bounding box of the block
-                        iblockstate.addCollisionBoxToList(world, blockpos, iblockstate.getSelectedBoundingBox(world, blockpos), tempList, null);
+                        iblockstate.addCollisionBoxToList(world, blockpos, iblockstate.getSelectedBoundingBox(world, blockpos), tempList, null, true);
 
                         // If there are no collision boxes, we fall back to adding the general bounding box
                         if (tempList.isEmpty()) {
@@ -76,13 +79,13 @@ public class BlockBoxDrawer {
                             AxisAlignedBB offsetFullBlock = Block.FULL_BLOCK_AABB.offset(blockpos);
                             for (AxisAlignedBB tempBB : tempList) {
 //                                    AxisAlignedBB resultantBB = tempBB.func_191500_a(offsetFullBlock).expandXyz(0.0020000000949949026D).offset(-d0, -d1, -d2);
-                                AxisAlignedBB resultantBB = intersection(tempBB, offsetFullBlock).expandXyz(0.0020000000949949026D).offset(-d0, -d1, -d2);
+                                AxisAlignedBB resultantBB = intersection(tempBB, offsetFullBlock).grow(0.0020000000949949026D).offset(-d0, -d1, -d2);
                                 collisionBoundingBoxes.add(resultantBB);
                             }
                         }
                         else {
                             for (AxisAlignedBB tempBB : tempList) {
-                                collisionBoundingBoxes.add(tempBB.expandXyz(0.0020000000949949026D).offset(-d0, -d1, -d2));
+                                collisionBoundingBoxes.add(tempBB.grow(0.0020000000949949026D).offset(-d0, -d1, -d2));
                             }
                         }
                     }

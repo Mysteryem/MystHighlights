@@ -74,12 +74,12 @@ public class EntityGlowOutliner {
             ScorePlayerTeam highlightsteam = scoreboard.getTeam(TEAM_NAME);
             if (highlightsteam == null) {
                 highlightsteam = scoreboard.createTeam(TEAM_NAME);
-                highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
+                highlightsteam.setPrefix(Util.TEAM_NAME_PREFIX);
             }
             // FIXME: Seems to have a tendency to get reset?
 //            highlightsteam.setNamePrefix(SPECIAL_NAME_PREFIX);
             // Add player to the team
-            scoreboard.addPlayerToTeam(nameUsedInScoreboard, highlightsteam.getRegisteredName());
+            scoreboard.addPlayerToTeam(nameUsedInScoreboard, highlightsteam.getName());
 
             // Set the render manager's font renderer
             // Directly accessing the field instead of using the getter method so we can ensure state goes back to how it was before
@@ -124,7 +124,7 @@ public class EntityGlowOutliner {
             renderGlobal.entityOutlineFramebuffer.bindFramebuffer(true);
 
             // Needed (actually 'runs' the shader as far as I can tell)
-            renderGlobal.entityOutlineShader.loadShaderGroup(partialTicks);
+            renderGlobal.entityOutlineShader.render(partialTicks);
 
             // Needed
             GlStateManager.enableDepth();
@@ -150,7 +150,7 @@ public class EntityGlowOutliner {
 
             // Restore the team
             if (currentTeam != null) {
-                scoreboard.addPlayerToTeam(nameUsedInScoreboard, currentTeam.getRegisteredName());
+                scoreboard.addPlayerToTeam(nameUsedInScoreboard, currentTeam.getName());
             }
             else {
                 scoreboard.removePlayerFromTeam(nameUsedInScoreboard, highlightsteam);

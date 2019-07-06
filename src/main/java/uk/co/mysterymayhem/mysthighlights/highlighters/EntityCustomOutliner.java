@@ -184,7 +184,7 @@ public class EntityCustomOutliner {
         RenderHelper.enableStandardItemLighting();
         int light;
         if (renderer instanceof RenderLiving) {
-            light = entity.getBrightnessForRender(partialTicks);
+            light = entity.getBrightnessForRender();
         }
         else {
             //FIXME: This is wrong most (all?) of the time, I'm not sure where lighting for paintings/item frames is done
@@ -209,10 +209,10 @@ public class EntityCustomOutliner {
         ScorePlayerTeam highlightsteam = scoreboard.getTeam(TEAM_NAME);
         if (highlightsteam == null) {
             highlightsteam = scoreboard.createTeam(TEAM_NAME);
-            highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
+            highlightsteam.setPrefix(Util.TEAM_NAME_PREFIX);
         }
 //                    highlightsteam.setNamePrefix(Util.TEAM_NAME_PREFIX);
-        scoreboard.addPlayerToTeam(nameUsedInScoreboard, highlightsteam.getRegisteredName());
+        scoreboard.addPlayerToTeam(nameUsedInScoreboard, highlightsteam.getName());
         RenderManager renderManager = renderer.getRenderManager();
         // Not using the method, since it's possible, but highly unlikely, that the field may contain a different value to what the method returns
         // And want to ensure that the state goes back to how it was beforehand
@@ -227,7 +227,7 @@ public class EntityCustomOutliner {
         // Restore state
         renderManager.textRenderer = oldFontRenderer;
         if (currentTeam != null) {
-            scoreboard.addPlayerToTeam(nameUsedInScoreboard, currentTeam.getRegisteredName());
+            scoreboard.addPlayerToTeam(nameUsedInScoreboard, currentTeam.getName());
         }
         else {
             scoreboard.removePlayerFromTeam(nameUsedInScoreboard, scoreboard.getTeam(TEAM_NAME));
